@@ -1,42 +1,46 @@
-/**
- * Get the user IP throught the webkitRTCPeerConnection
- * @param onNewIP {Function} listener function to expose the IP locally
- * @return undefined
- */
-function getUserIP(onNewIP) { //  onNewIp - your listener function for new IPs
-    //compatibility for firefox and chrome
-    var myPeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
-    var pc = new myPeerConnection({
-        iceServers: []
-    }),
-    noop = function() {},
-    localIPs = {},
-    ipRegex = /([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/g,
-    key;
+// ============== 
+// Make cool "hacker" effect using random text and a canvas
+//https://github.com/joeymalvinni/webrtc-ip/blob/main/example/index.js
 
-    function iterateIP(ip) {
-        if (!localIPs[ip]) onNewIP(ip);
-        localIPs[ip] = true;
-    }
+const canvas = document.getElementById('canv');
+const ctx = canvas.getContext('2d');
 
-     //create a bogus data channel
-    pc.createDataChannel("");
+const w = canvas.width = document.body.offsetWidth;
+const h = canvas.height = document.body.offsetHeight;
+// Get amount of collumns we can use from the width
+const cols = Math.floor(w / 20) + 1;
+const ypos = Array(cols).fill(0);
 
-    // create offer and set local description
-    pc.createOffer().then(function(sdp) {
-        sdp.sdp.split('\n').forEach(function(line) {
-            if (line.indexOf('candidate') < 0) return;
-            line.match(ipRegex).forEach(iterateIP);
-        });
-        
-        pc.setLocalDescription(sdp, noop, noop);
-    }).catch(function(reason) {
-        // An error occurred, so handle the failure to connect
-    });
+// Set background to black
+ctx.fillStyle = '#000';
+ctx.fillRect(0, 0, w, h);
 
-    //listen for candidate events
-    pc.onicecandidate = function(ice) {
-        if (!ice || !ice.candidate || !ice.candidate.candidate || !ice.candidate.candidate.match(ipRegex)) return;
-        ice.candidate.candidate.match(ipRegex).forEach(iterateIP);
-    };
+function matrix () {
+  ctx.fillStyle = '#0001';
+  ctx.fillRect(0, 0, w, h);
+  
+  // Green text with terminal-like text
+  ctx.fillStyle = '#00b07c';
+  ctx.font = '15pt digital-7';
+  
+  // Add the text
+  ypos.forEach((y, ind) => {
+    const text = String.fromCharCode(Math.random() * 128);
+    const x = ind * 20;
+    ctx.fillText(text, x, y);
+    if (y > 100 + Math.random() * 10000) ypos[ind] = 0;
+    else ypos[ind] = y + 20;
+  });
+}
+
+setInterval(matrix, 50);
+
+// ============== 
+// Get the IP address(es) and add it to the list
+
+window.onload = async function () {
+  let data = await getIPs()
+  for(let i = 0; i < data.length; i++){
+    document.getElementById('ips').innerHTML += `<li>${data[i]}</li>`
+  }
 }
