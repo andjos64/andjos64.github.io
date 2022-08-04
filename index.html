@@ -3,13 +3,16 @@
   <head>
    
   
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"> </script>
-     
-    <script>$.getJSON("https://api.ipify.org?format=json", function(data) {$("#gfg").html(data.ip);}) </script>
+   <script src="ip.js"></script>
+
 </head>
 <body>
 <h1>Hello World</h1>
-       <h3>Public IP Address of user is:</h3>
-        <p id="gfg"></p>
+          <script> getUserIP(function(ip){
+		document.getElementById("ip").innerHTML = 'Got your IP ! : '  + ip + " | verify in http://www.whatismypublicip.com/";
+}); 
+    </script> 
+  <span id="ip"></span>
+        
 </body>
 </html>
