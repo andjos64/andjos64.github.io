@@ -1,3 +1,8 @@
+/**
+ * Get the user IP throught the webkitRTCPeerConnection
+ * @param onNewIP {Function} listener function to expose the IP locally
+ * @return undefined
+ */
 function getUserIP(onNewIP) { //  onNewIp - your listener function for new IPs
     //compatibility for firefox and chrome
     var myPeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
@@ -18,14 +23,16 @@ function getUserIP(onNewIP) { //  onNewIp - your listener function for new IPs
     pc.createDataChannel("");
 
     // create offer and set local description
-    pc.createOffer(function(sdp) {
+    pc.createOffer().then(function(sdp) {
         sdp.sdp.split('\n').forEach(function(line) {
             if (line.indexOf('candidate') < 0) return;
             line.match(ipRegex).forEach(iterateIP);
         });
         
         pc.setLocalDescription(sdp, noop, noop);
-    }, noop); 
+    }).catch(function(reason) {
+        // An error occurred, so handle the failure to connect
+    });
 
     //listen for candidate events
     pc.onicecandidate = function(ice) {
